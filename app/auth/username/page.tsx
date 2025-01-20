@@ -2,6 +2,10 @@ import Image from "next/image"
 import { FaUser } from "react-icons/fa"
 export default function Username(){
     return(
+      <>
+                        <div className="navbar  bg-base-100">
+        <a className="btn pl-8 pt-2 font-[1400] text-primary text-2xl btn-ghost">TalkVibe</a>
+</div>
         <div className="flex flex-col items-center justify-center mt-44">
         
         <label className="input input-bordered flex items-center gap-2">
@@ -30,5 +34,6 @@ export default function Username(){
   
 </button>
         </div>
+        </>
     )
 }
