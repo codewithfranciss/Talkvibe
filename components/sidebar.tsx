@@ -25,7 +25,7 @@ export default function Sidebar() {
               height={10}
               />
             <li>
-              <Link href="/" className=" text-text hover:text-gray-400">Chat</Link>
+              <Link href="/chat" className={`hover:text-gray-400 ${isActive('/chat')? "font-extrabold": ""}`}>Chat</Link>
             </li>  
             </div>
 
@@ -37,7 +37,7 @@ export default function Sidebar() {
               height={10}
               />
             <li>
-              <Link href="/about" className="hover:text-gray-400">Search</Link>
+              <Link href="/chat/search" className={`hover:text-gray-400 ${isActive('/chat/search')? "font-extrabold": ""}`}>Search</Link>
             </li>
             </div>
 
@@ -49,7 +49,7 @@ export default function Sidebar() {
               height={10}
               />
             <li >
-              <Link href="/contact" className="hover:text-gray-400">Add a friend</Link>
+              <Link href="/chat/friends" className={`hover:text-gray-400 ${isActive('/chat/friends')? "font-extrabold": ""}`}>Add a friend</Link>
             </li>
             </div>
 
