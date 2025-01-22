@@ -14,7 +14,7 @@ export default function Chat({ children }: { children: React.ReactNode }) {
        <ChatSidebar />
 
         {/* Children (Main Content Area) */}
-        <div className="ml-[380px] p-4">{children}</div>
+        <div className="ml-[380px]">{children}</div>
       </main>
     </div>
   );

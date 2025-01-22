@@ -19,7 +19,7 @@ export default function ChatSidebar(){
             <input
               type="text"
               placeholder="Search for friend"
-              className="pl-10 px-2 py-2 rounded-full border bg-[#0a0a0a] border-1 border-gray-300 w-full focus:outline-none"
+              className="pl-10 px-2 py-2 rounded-full border bg-[#0a0a0a] border-1 border-gray-600 w-full focus:outline-none"
             />
           </div>
         </div>
