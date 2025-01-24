@@ -1,16 +1,20 @@
 "use client"
 
+import { useRouter } from "next/navigation";
+import { supabase } from "@/lib/supabaseClient";
 import Link from "next/link"
 import Image from "next/image";
 import { usePathname } from "next/navigation";
 import { use } from "react";
 export default function Sidebar() {
   const pathname = usePathname();
+  const router = useRouter();
   const isActive = (path : string):boolean => {
-    return pathname === path
-  
-  }
-  
+    return pathname === path}
+      const handleLogout = async () =>{
+        const { error } = await supabase.auth.signOut()
+          router.push('/')
+      }
   return (
     <aside className="w-[200px] max-w-xs h-screen fixed left-0 top-0 z-40 border-r border-gray-600">
       <div className="h-full px-3 py-4">
@@ -78,7 +82,7 @@ export default function Sidebar() {
           </ul>
 
           <div className="mt-80 mb-4">
-            <button className="w-full py-2 text-black bg-text hover:bg-gray-400 rounded-full">
+            <button onClick={handleLogout} className="w-full py-2 text-black bg-text hover:bg-gray-400 rounded-full">
               Logout
             </button>
           </div>
