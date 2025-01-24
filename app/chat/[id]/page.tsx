@@ -28,26 +28,36 @@ export default function ActiveChat() {
 
       {/* Chat Section */}
       <div className="flex-1 overflow-y-auto p-4">
-        {chatMessages.map((chat) => (
-          <div key={chat.id} className={`chat chat-${chat.type}`}>
-            <div className="chat-image avatar">
-              <div className="w-10 rounded-full">
-                <img
-                  alt={`${chat.user}'s avatar`}
-                  src="https://img.daisyui.com/images/stock/photo-1534528741775-53994a69daeb.webp"
-                />
-              </div>
-            </div>
-            <div className="chat-header">
-              {chat.user}
-              <time className="text-xs opacity-50 ml-2">{chat.time}</time>
-            </div>
-            <div className={`chat-bubble ${chat.type === "start" ? "bg-gray-600" : "bg-primary"}`}>
-              {chat.message}
-            </div>
-            <div className="chat-footer opacity-50">{chat.type === "end" ? "Seen" : "Delivered"}</div>
-          </div>
-        ))}
+      <div className="chat chat-start">
+  <div className="chat-image avatar">
+    <div className="w-10 rounded-full">
+      <img
+        alt="Tailwind CSS chat bubble component"
+        src="https://img.daisyui.com/images/stock/photo-1534528741775-53994a69daeb.webp" />
+    </div>
+  </div>
+  <div className="chat-header">
+    Obi-Wan Kenobi
+    <time className="text-xs opacity-50">12:45</time>
+  </div>
+  <div className="chat-bubble bg-gray-600">You were the Chosen One!</div>
+  <div className="chat-footer opacity-50">Delivered</div>
+</div>
+<div className="chat chat-end">
+  <div className="chat-image avatar">
+    <div className="w-10 rounded-full">
+      <img
+        alt="Tailwind CSS chat bubble component"
+        src="https://img.daisyui.com/images/stock/photo-1534528741775-53994a69daeb.webp" />
+    </div>
+  </div>
+  <div className="chat-header">
+    Anakin
+    <time className="text-xs opacity-50">12:46</time>
+  </div>
+  <div className="chat-bubble bg-primary">I hate you!</div>
+  <div className="chat-footer opacity-50">Seen at 12:46</div>
+</div>
       </div>
 
       {/* Input Field */}
