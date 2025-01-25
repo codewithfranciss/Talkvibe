@@ -4,10 +4,15 @@ import React from 'react';
 import { supabase } from '@/lib/supabaseClient';
 import { useState } from 'react';
 import Image from 'next/image';
+import { useRouter } from 'next/navigation';
 
 export default function Search() {
 const [query, setQuery] = useState("")
 const [result, setResult] = useState<any[]>([])
+const [requestStatus, setRequestStatus] = useState('')
+const router= useRouter()
+
+
   const handleSearch = async () => {
     if (!query.trim()) return;
       const {data, error} = await supabase
@@ -28,6 +33,24 @@ const [result, setResult] = useState<any[]>([])
           e.preventDefault()
           await handleSearch()
         }
+  }
+
+  const sendFriendRequest = async (recieverId: string) => {
+    const {data: {user}} = await supabase.auth.getUser()
+    if(!user){
+        router.push('/')
+    }else{
+      const {data, error} = await supabase
+      .from('friend_requests')
+      .insert({
+        sender_id: user.id,
+        receiver_id: recieverId,
+        status: 'pending'
+      })
+      if (error) {
+        console.error("Error sending friend request:", error.message);
+      }
+    }
   }
   return (
     <div className="mt-8 flex flex-col items-center justify-center">
@@ -79,7 +102,9 @@ const [result, setResult] = useState<any[]>([])
             </div>
 
             {/* Send Request Button */}
-            <button className="rounded-full bg-secondary border-primary px-4 py-2  hover:bg-accent transition">
+            <button 
+            onClick={()=> sendFriendRequest(results.id)}
+            className="rounded-full bg-secondary border-primary px-4 py-2  hover:bg-accent transition">
               <Image
               src={`/image/add-user.png`}
               alt='add user icon'
