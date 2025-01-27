@@ -12,8 +12,8 @@ const [result, setResult] = useState<any[]>([])
 const [requestStatus, setRequestStatus] = useState('')
 const router= useRouter()
 
-
   const handleSearch = async () => {
+    const {data: {user}} = await supabase.auth.getUser()
     if (!query.trim()) return;
       const {data, error} = await supabase
       .from('users')
@@ -25,7 +25,10 @@ const router= useRouter()
         return;
       }else {
         console.log(data)
-      setResult(data || []);
+      setResult(data.filter((data)=>{
+          return data.id !== user?.id
+      })
+        || []);
     } 
   }
   const handleKeydown = async (e: React.KeyboardEvent<HTMLInputElement>) => {
@@ -37,20 +40,23 @@ const router= useRouter()
 
   const sendFriendRequest = async (recieverId: string) => {
     const {data: {user}} = await supabase.auth.getUser()
+    
     if(!user){
         router.push('/')
-    }else{
+    }
+
+      
       const {data, error} = await supabase
       .from('friend_requests')
       .insert({
-        sender_id: user.id,
+        sender_id: user?.id,
         receiver_id: recieverId,
         status: 'pending'
       })
       if (error) {
         console.error("Error sending friend request:", error.message);
       }
-    }
+   
   }
   return (
     <div className="mt-8 flex flex-col items-center justify-center">
