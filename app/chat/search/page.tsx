@@ -1,63 +1,93 @@
-'use client'
+"use client";
 
-import React from 'react';
-import { supabase } from '@/lib/supabaseClient';
-import { useState } from 'react';
-import Image from 'next/image';
-import { useRouter } from 'next/navigation';
+import React, { useState, useEffect } from "react";
+import { supabase } from "@/lib/supabaseClient";
+import Image from "next/image";
+import { useRouter } from "next/navigation";
 
 export default function Search() {
-const [query, setQuery] = useState("")
-const [result, setResult] = useState<any[]>([])
-const [requestStatus, setRequestStatus] = useState('')
-const router= useRouter()
+  const [query, setQuery] = useState("");
+  const [result, setResult] = useState<any[]>([]);
+  const [friendIds, setFriendIds] = useState<Set<string>>(new Set());
+  const router = useRouter();
+
+  useEffect(() => {
+    const fetchFriends = async () => {
+      const { data: userData, error: userError } = await supabase.auth.getUser();
+      if (userError || !userData?.user) {
+        router.push("/");
+        return;
+      }
+      const userId = userData.user.id;
+
+      const { data, error } = await supabase
+        .from("friend_requests")
+        .select("sender_id, receiver_id")
+        .or(`sender_id.eq.${userId},receiver_id.eq.${userId}`)
+        .eq("status", "accepted");
+
+      if (error) {
+        console.error("Error fetching friends:", error.message);
+        return;
+      }
+
+      // Store friend IDs in a Set for fast lookup
+      const friendSet = new Set<string>();
+      data.forEach((friend: any) => {
+        friendSet.add(friend.sender_id === userId ? friend.receiver_id : friend.sender_id);
+      });
+
+      setFriendIds(friendSet);
+    };
+
+    fetchFriends();
+  }, []);
 
   const handleSearch = async () => {
-    const {data: {user}} = await supabase.auth.getUser()
-    if (!query.trim()) return;
-      const {data, error} = await supabase
-      .from('users')
-      .select('*')
-      .ilike("username", `%${query}%`)
- 
-   if (error) {
-        console.error("Error fetching users:", error.message);
-        return;
-      }else {
-        console.log(data)
-      setResult(data.filter((data)=>{
-          return data.id !== user?.id
-      })
-        || []);
-    } 
-  }
-  const handleKeydown = async (e: React.KeyboardEvent<HTMLInputElement>) => {
-        if(e.key == "Enter"){
-          e.preventDefault()
-          await handleSearch()
-        }
-  }
+    const { data: userData } = await supabase.auth.getUser();
+    if (!userData?.user || !query.trim()) return;
 
-  const sendFriendRequest = async (recieverId: string) => {
-    const {data: {user}} = await supabase.auth.getUser()
-    
-    if(!user){
-        router.push('/')
+    const { data, error } = await supabase
+      .from("users")
+      .select("*")
+      .ilike("username", `%${query}%`);
+
+    if (error) {
+      console.error("Error fetching users:", error.message);
+      return;
     }
 
-      
-      const {data, error} = await supabase
-      .from('friend_requests')
-      .insert({
-        sender_id: user?.id,
-        receiver_id: recieverId,
-        status: 'pending'
-      })
-      if (error) {
-        console.error("Error sending friend request:", error.message);
-      }
-   
-  }
+    // Filter out the logged-in user and friends
+    const filteredResults = data.filter((user) => user.id !== userData.user.id && !friendIds.has(user.id));
+
+    setResult(filteredResults);
+  };
+
+  const handleKeydown = async (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === "Enter") {
+      e.preventDefault();
+      await handleSearch();
+    }
+  };
+
+  const sendFriendRequest = async (receiverId: string) => {
+    const { data: userData } = await supabase.auth.getUser();
+    if (!userData?.user) {
+      router.push("/");
+      return;
+    }
+
+    const { error } = await supabase.from("friend_requests").insert({
+      sender_id: userData.user.id,
+      receiver_id: receiverId,
+      status: "pending",
+    });
+
+    if (error) {
+      console.error("Error sending friend request:", error.message);
+    }
+  };
+
   return (
     <div className="mt-8 flex flex-col items-center justify-center">
       {/* Search Bar */}
@@ -80,52 +110,37 @@ const router= useRouter()
         />
       </div>
 
-      { result.length > 0 ?(
-      result.map((results) =>(
-      <div 
-      key={results.id}
-      className="flex flex-col mb-4 gap-4 w-full max-w-2xl">
-        
-          <div
-           
-            className="flex items-center justify-between border border-gray-600  p-4 rounded-lg shadow-md"
-          >
-            
-            <div className="flex items-center gap-4">
-              <div 
-              className="w-12 h-12 rounded-full overflow-hidden">
-                <Image
-                  src={`${results.avatar_url}`}
-                  alt="User Profile"
-                  width={48}
-                  height={48}
-                  className="object-cover"
-                />
+      {result.length > 0 ? (
+        result.map((user) => (
+          <div key={user.id} className="flex flex-col mb-4 gap-4 w-full max-w-2xl">
+            <div className="flex items-center justify-between border border-gray-600 p-4 rounded-lg shadow-md">
+              <div className="flex items-center gap-4">
+                <div className="w-12 h-12 rounded-full overflow-hidden">
+                  <Image
+                    src={user.avatar_url || "/image/user.png"}
+                    alt="User Profile"
+                    width={48}
+                    height={48}
+                    className="object-cover"
+                  />
+                </div>
+                <div>
+                  <h3 className="text-lg font-medium text-text">{user.username}</h3>
+                </div>
               </div>
-              <div>
-                <h3 className="text-lg font-medium text-text">{results.username}</h3>
-              </div>
+              {/* Send Request Button */}
+              <button
+                onClick={() => sendFriendRequest(user.id)}
+                className="rounded-full bg-secondary border-primary px-4 py-2 hover:bg-accent transition"
+              >
+                <Image src="/image/add-user.png" alt="add user icon" width={20} height={10} />
+              </button>
             </div>
-
-            {/* Send Request Button */}
-            <button 
-            onClick={()=> sendFriendRequest(results.id)}
-            className="rounded-full bg-secondary border-primary px-4 py-2  hover:bg-accent transition">
-              <Image
-              src={`/image/add-user.png`}
-              alt='add user icon'
-              width={20}
-              height={10}
-              />
-      
-            </button>
-        
           </div>
-          </div>
-        ))): (
-        <p className='mt-44 text-center text-text'>No user found</p>
+        ))
+      ) : (
+        <p className="mt-44 text-center text-text">No user found</p>
       )}
-      
     </div>
   );
 }
