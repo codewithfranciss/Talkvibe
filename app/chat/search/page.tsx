@@ -4,11 +4,14 @@ import React, { useState, useEffect } from "react";
 import { supabase } from "@/lib/supabaseClient";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
+import { FaCheck } from "react-icons/fa"; // Importing the check mark icon
 
 export default function Search() {
   const [query, setQuery] = useState("");
   const [result, setResult] = useState<any[]>([]);
   const [friendIds, setFriendIds] = useState<Set<string>>(new Set());
+  const [loadingStates, setLoadingStates] = useState<{ [key: string]: boolean }>({});
+  const [requestSentStates, setRequestSentStates] = useState<{ [key: string]: boolean }>({});
   const router = useRouter();
 
   useEffect(() => {
@@ -44,8 +47,11 @@ export default function Search() {
   }, []);
 
   const handleSearch = async () => {
+    setResult([]); 
     const { data: userData } = await supabase.auth.getUser();
-    if (!userData?.user || !query.trim()) return;
+    if (!userData?.user || !query.trim()) {
+      return;
+    }
 
     const { data, error } = await supabase
       .from("users")
@@ -57,7 +63,6 @@ export default function Search() {
       return;
     }
 
-    // Filter out the logged-in user and friends
     const filteredResults = data.filter((user) => user.id !== userData.user.id && !friendIds.has(user.id));
 
     setResult(filteredResults);
@@ -71,6 +76,9 @@ export default function Search() {
   };
 
   const sendFriendRequest = async (receiverId: string) => {
+    setLoadingStates((prev) => ({ ...prev, [receiverId]: true }));
+    setRequestSentStates((prev) => ({ ...prev, [receiverId]: false }));
+
     const { data: userData } = await supabase.auth.getUser();
     if (!userData?.user) {
       router.push("/");
@@ -85,7 +93,12 @@ export default function Search() {
 
     if (error) {
       console.error("Error sending friend request:", error.message);
+      setLoadingStates((prev) => ({ ...prev, [receiverId]: false }));
+    } else {
+      setRequestSentStates((prev) => ({ ...prev, [receiverId]: true }));
     }
+
+    setLoadingStates((prev) => ({ ...prev, [receiverId]: false }));
   };
 
   return (
@@ -131,9 +144,16 @@ export default function Search() {
               {/* Send Request Button */}
               <button
                 onClick={() => sendFriendRequest(user.id)}
-                className="rounded-full bg-secondary border-primary px-4 py-2 hover:bg-accent transition"
+                className="rounded-full bg-secondary border-primary px-4 py-2 hover:bg-accent transition relative"
+                disabled={loadingStates[user.id] || requestSentStates[user.id]}
               >
-                <Image src="/image/add-user.png" alt="add user icon" width={20} height={10} />
+                {loadingStates[user.id] ? (
+                  <span className="loading loading-primary absolute inset-0 m-auto"></span>
+                ) : requestSentStates[user.id] ? (
+                  <FaCheck className="text-green-500 w-5 h-5" />
+                ) : (
+                  <Image src="/image/add-user.png" alt="add user icon" width={20} height={10} />
+                )}
               </button>
             </div>
           </div>

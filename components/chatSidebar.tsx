@@ -1,13 +1,14 @@
 "use client";
-import Image from "next/image";
-import { supabase } from "@/lib/supabaseClient";
 import { useEffect, useState } from "react";
+import { supabase } from "@/lib/supabaseClient";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
+import Image from "next/image";
 
 export default function ChatSidebar() {
   const router = useRouter();
   const [friends, setFriends] = useState<any>([]);
+  const [loading, setLoading] = useState<boolean>(true);
 
   useEffect(() => {
     const fetchFriends = async () => {
@@ -35,17 +36,17 @@ export default function ChatSidebar() {
         return;
       }
 
-      // Extract unique friends
       const uniqueFriends = Array.from(
         new Map(
           data.map((record: any) => {
             const friend = record.sender_id === userId ? record.receiver : record.sender;
-            return [friend.id, friend]; // Map ensures uniqueness by ID
+            return [friend.id, friend];
           })
         ).values()
       );
 
       setFriends(uniqueFriends);
+      setLoading(false);
     };
 
     fetchFriends();
@@ -71,8 +72,19 @@ export default function ChatSidebar() {
             className="pl-10 px-2 py-2 rounded-full border bg-[#0a0a0a] border-1 border-gray-600 w-full focus:outline-none"
           />
         </div>
-        {/* Friend section */}
-        {friends.length > 0 ? (
+        {loading ? (
+          <div className="p-4 space-y-4">
+            {[...Array(5)].map((_, index) => (
+              <div key={index} className="flex items-center space-x-4 animate-pulse">
+                <div className="skeleton w-12 h-12 rounded-full bg-gray-600"></div>
+                <div className="flex-1">
+                  <div className="skeleton h-4 w-32 bg-gray-500"></div>
+                  <div className="skeleton h-3 w-24 bg-gray-600 mt-2"></div>
+                </div>
+              </div>
+            ))}
+          </div>
+        ) : friends.length > 0 ? (
           friends.map((friend: any) => (
             <Link key={friend.id} href={`/chat/${friend.id}`} className="block">
               <div className="my-8 p-3 hover:bg-gray-900 w-full">
