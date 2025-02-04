@@ -77,15 +77,15 @@ export default function Notification() {
     <div className="notification-item border-b border-gray-600 py-4 opacity-100 transition-opacity duration-500 ease-in-out animate-pulse">
       <div className="flex justify-between items-center px-4">
         <div className="flex gap-4 items-center">
-          <div className="w-12 h-12 bg-gray-300 rounded-full"></div>
+          <div className="w-12 h-12 bg-gray-600 rounded-full"></div>
           <div className="flex flex-col">
-            <div className="h-4 bg-gray-300 w-24 mb-2"></div>
-            <div className="h-4 bg-gray-300 w-40"></div>
+            <div className="h-4 bg-gray-600 w-24 mb-2"></div>
+            <div className="h-4 bg-gray-600 w-40"></div>
           </div>
         </div>
         <div className="flex items-center gap-4">
-          <div className="w-8 h-8 bg-gray-300 rounded-full"></div>
-          <div className="w-8 h-8 bg-gray-300 rounded-full"></div>
+          <div className="w-8 h-8 bg-gray-600 rounded-full"></div>
+          <div className="w-8 h-8 bg-gray-600 rounded-full"></div>
         </div>
       </div>
     </div>
